@@ -1,16 +1,16 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { userHasHouseholdContext } from "@/lib/auth/onboardingRoutes";
 import { LoginForm } from "./login-form";
-
-export const instant = false;
 
 type LoginPageProps = {
   searchParams: Promise<{ callbackUrl?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
+  await connection();
   const session = await auth();
   if (session?.user) {
     redirect(

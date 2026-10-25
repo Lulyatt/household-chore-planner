@@ -56,3 +56,6 @@ temp/
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+
+# Windows accidental `echo > nul` artifact
+nul

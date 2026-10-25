@@ -1,11 +1,11 @@
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { userHasHouseholdContext } from "@/lib/auth/onboardingRoutes";
 import { OnboardingForm } from "./onboarding-form";
 
-export const instant = false;
-
 export default async function OnboardingPage() {
+  await connection();
   const session = await auth();
   if (!session?.user) {
     redirect("/login?callbackUrl=/onboarding");
