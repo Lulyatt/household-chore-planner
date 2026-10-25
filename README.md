@@ -95,7 +95,18 @@ See [`AGENTS.md`](AGENTS.md) for commands agents should use.
 
    `npx prisma generate` also runs automatically after `npm install` when the Prisma schema is present.
 
-4. Run tests. The suite includes a DB connectivity check (`lib/db.test.ts`) that runs `SELECT 1` when `DATABASE_URL` is set. If `DATABASE_URL` is missing, that integration test is **skipped** so `npm test` still passes; set `DATABASE_URL` in `.env` to exercise the database check locally.
+4. Optional sample data (one household, two members):
+
+   ```bash
+   npm run db:seed
+   ```
+
+5. Run tests. When `DATABASE_URL` is set, integration tests exercise the database (`lib/db.test.ts`, `lib/householdMembers.test.ts`). If `DATABASE_URL` is missing, those tests are **skipped** so `npm test` still passes; set `DATABASE_URL` in `.env` to run them locally.
+
+### Household & member data rules
+
+- **Duplicate names:** The database allows the same display name twice within one household. The Members UI may enforce uniqueness later; until then, avoid duplicates in seed and manual data if you want readable lists.
+- **Deleting a household:** Removing a `Household` **cascades** and deletes its `Member` rows (`onDelete: Cascade` on the foreign key).
 
 ## Status
 

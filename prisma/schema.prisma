@@ -1,5 +1,7 @@
-// Domain models (Household, chores, etc.) land in later tasks.
-// This schema establishes PostgreSQL connectivity and migration history.
+// Household and Member models for shared-account scoping.
+// Duplicate display names within one household are allowed at the DB layer;
+// the Members UI (#9) may enforce uniqueness in application code.
+// Deleting a household cascades to its members (onDelete: Cascade).
 
 generator client {
   provider = "prisma-client-js"
@@ -8,4 +10,26 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Household {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   Member[]
+
+  @@map("households")
+}
+
+model Member {
+  id          String    @id @default(cuid())
+  name        String
+  householdId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId])
+  @@map("members")
 }
