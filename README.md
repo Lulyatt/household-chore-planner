@@ -75,6 +75,28 @@ npm run lint
 
 See [`AGENTS.md`](AGENTS.md) for commands agents should use.
 
+### Database (PostgreSQL + Prisma)
+
+1. Copy `.env.example` to `.env` and set `DATABASE_URL` to your Postgres instance.
+2. Optional local database with Docker:
+
+   ```bash
+   docker compose up -d
+   ```
+
+   The default `.env.example` URL matches this service (`postgres` / `postgres`, database `household_chore_planner`, port `5432`).
+
+3. Apply migrations and generate the client:
+
+   ```bash
+   npx prisma migrate dev
+   npx prisma generate
+   ```
+
+   `npx prisma generate` also runs automatically after `npm install` when the Prisma schema is present.
+
+4. Run tests. The suite includes a DB connectivity check (`lib/db.test.ts`) that runs `SELECT 1` when `DATABASE_URL` is set. If `DATABASE_URL` is missing, that integration test is **skipped** so `npm test` still passes; set `DATABASE_URL` in `.env` to exercise the database check locally.
+
 ## Status
 
-Next.js (App Router) scaffold with a passing test suite—see GitHub issue #1.
+Next.js (App Router) scaffold with PostgreSQL/Prisma connectivity—see GitHub issues #1 and #2.

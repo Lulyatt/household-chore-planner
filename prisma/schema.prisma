@@ -1,0 +1,11 @@
+// Domain models (Household, chores, etc.) land in later tasks.
+// This schema establishes PostgreSQL connectivity and migration history.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
