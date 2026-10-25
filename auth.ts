@@ -63,15 +63,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user?.id) {
         token.sub = user.id;
+      }
+      const userId = token.sub;
+      if (userId) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            memberId: true,
+            member: { select: { householdId: true } },
+          },
+        });
+        token.memberId = dbUser?.memberId ?? null;
+        token.householdId = dbUser?.member?.householdId ?? null;
       }
       return token;
     },
     session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        session.user.memberId =
+          typeof token.memberId === "string" ? token.memberId : null;
+        session.user.householdId =
+          typeof token.householdId === "string" ? token.householdId : null;
       }
       return session;
     },

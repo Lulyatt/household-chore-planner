@@ -44,8 +44,6 @@ export async function signUpAction(
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const name = String(formData.get("name") ?? "");
-  const callbackUrl = String(formData.get("callbackUrl") ?? "/dashboard");
-
   const registered = await registerUser({ email, password, name });
   if (!registered.ok) {
     return { error: registered.message };
@@ -55,7 +53,7 @@ export async function signUpAction(
     await signIn("credentials", {
       email,
       password,
-      redirectTo: callbackUrl.startsWith("/") ? callbackUrl : "/dashboard",
+      redirectTo: "/onboarding",
     });
   } catch (error) {
     if (isRedirectError(error)) {
@@ -70,5 +68,5 @@ export async function signUpAction(
     throw error;
   }
 
-  redirect(callbackUrl.startsWith("/") ? callbackUrl : "/dashboard");
+  redirect("/onboarding");
 }
