@@ -13,6 +13,16 @@ function formatDueDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+function formatOccurrenceStatus(status: string): string {
+  if (status === "COMPLETED") {
+    return "Completed";
+  }
+  if (status === "PENDING") {
+    return "Pending";
+  }
+  return status;
+}
+
 export default async function ChoreDetailPage({
   params,
   searchParams,
@@ -62,19 +72,32 @@ export default async function ChoreDetailPage({
             No due dates yet. Add recurrence or assignments in a later update.
           </p>
         ) : (
-          <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-white">
-            {chore.occurrences.map((occurrence) => (
-              <li
-                key={occurrence.id}
-                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
-              >
-                <span className="text-zinc-900">
-                  Due {formatDueDate(occurrence.dueDate)}
-                </span>
-                <span className="text-zinc-600">{occurrence.status}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+            <table className="min-w-full divide-y divide-zinc-200 text-sm">
+              <thead className="bg-zinc-50 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
+                <tr>
+                  <th className="px-4 py-3">Due date</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Assignee</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200">
+                {chore.occurrences.map((occurrence) => (
+                  <tr key={occurrence.id}>
+                    <td className="px-4 py-3 text-zinc-900">
+                      {formatDueDate(occurrence.dueDate)}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-600">
+                      {formatOccurrenceStatus(occurrence.status)}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-600">
+                      {occurrence.assignee?.name ?? "Unassigned"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </section>
