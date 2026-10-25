@@ -61,7 +61,7 @@ Recurring occurrences stay distinguishable in history when one is missed; the ne
 
 ## Documentation
 
-Full product scope and principles: [`plan.md`](plan.md). Additional notes live under [`_docs/`](_docs/).
+Full product scope and principles: [`_docs/plan.md`](_docs/plan.md). Additional notes live under [`_docs/`](_docs/).
 
 ## Status
 
