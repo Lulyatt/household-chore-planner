@@ -22,7 +22,12 @@ describe.skipIf(!hasDatabaseUrl)("completeOnboarding", () => {
       householdName: "Test Home",
       memberName: "Test User",
     });
-    expect(result).toEqual({ ok: true });
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    expect(result.memberId).toBeTruthy();
+    expect(result.householdId).toBeTruthy();
 
     const updated = await prisma.user.findUnique({
       where: { id: user.id },

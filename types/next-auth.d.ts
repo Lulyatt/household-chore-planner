@@ -2,6 +2,11 @@ import "next-auth";
 import "next-auth/jwt";
 
 declare module "next-auth" {
+  interface User {
+    memberId?: string | null;
+    householdId?: string | null;
+  }
+
   interface Session {
     user: {
       id: string;

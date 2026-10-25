@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { userHasHouseholdContext } from "@/lib/auth/onboardingRoutes";
 import { OnboardingForm } from "./onboarding-form";
 
 export const instant = false;
@@ -9,7 +10,7 @@ export default async function OnboardingPage() {
   if (!session?.user) {
     redirect("/login?callbackUrl=/onboarding");
   }
-  if (session.user.householdId) {
+  if (userHasHouseholdContext(session.user)) {
     redirect("/dashboard");
   }
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth, unstable_update } from "@/auth";
 import { completeOnboarding } from "@/lib/auth/completeOnboarding";
 
 export type OnboardingFormState = {
@@ -29,6 +29,13 @@ export async function completeOnboardingAction(
   if (!result.ok) {
     return { error: result.message };
   }
+
+  await unstable_update({
+    user: {
+      memberId: result.memberId,
+      householdId: result.householdId,
+    },
+  });
 
   redirect("/dashboard");
 }

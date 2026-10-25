@@ -7,7 +7,7 @@ import { validateEmail, validatePassword } from "@/lib/password";
 
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
     // Credentials provider requires JWT sessions (database strategy is OAuth-only).
@@ -44,6 +44,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const normalizedEmail = email.trim().toLowerCase();
         const user = await prisma.user.findUnique({
           where: { email: normalizedEmail },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            passwordHash: true,
+            memberId: true,
+            member: { select: { householdId: true } },
+          },
         });
         if (!user?.passwordHash) {
           return null;
@@ -58,27 +66,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name,
+          memberId: user.memberId,
+          householdId: user.member?.householdId ?? null,
         };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user?.id) {
         token.sub = user.id;
+        token.memberId = user.memberId ?? null;
+        token.householdId = user.householdId ?? null;
       }
-      const userId = token.sub;
-      if (userId) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: userId },
-          select: {
-            memberId: true,
-            member: { select: { householdId: true } },
-          },
-        });
-        token.memberId = dbUser?.memberId ?? null;
-        token.householdId = dbUser?.member?.householdId ?? null;
+
+      if (trigger === "update" && session?.user) {
+        if (session.user.memberId !== undefined) {
+          token.memberId = session.user.memberId;
+        }
+        if (session.user.householdId !== undefined) {
+          token.householdId = session.user.householdId;
+        }
       }
+
       return token;
     },
     session({ session, token }) {

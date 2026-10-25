@@ -11,8 +11,12 @@ describe("onboardingRoutes", () => {
     expect(isOnboardingRoute("/dashboard")).toBe(false);
   });
 
-  it("requires a household id in session context", () => {
-    expect(userHasHouseholdContext({ householdId: "hh_1" })).toBe(true);
+  it("requires member and household ids in session context", () => {
+    expect(
+      userHasHouseholdContext({ memberId: "m_1", householdId: "hh_1" }),
+    ).toBe(true);
+    expect(userHasHouseholdContext({ householdId: "hh_1" })).toBe(false);
+    expect(userHasHouseholdContext({ memberId: "m_1" })).toBe(false);
     expect(userHasHouseholdContext({ householdId: null })).toBe(false);
     expect(userHasHouseholdContext({})).toBe(false);
   });

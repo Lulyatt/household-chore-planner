@@ -1,7 +1,7 @@
 import { prisma } from "../db";
 
 export type CompleteOnboardingResult =
-  | { ok: true }
+  | { ok: true; memberId: string; householdId: string }
   | { ok: false; message: string };
 
 function validateDisplayName(value: string, label: string): string | null {
@@ -47,7 +47,7 @@ export async function completeOnboarding(input: {
   const householdName = input.householdName.trim();
   const memberName = input.memberName.trim();
 
-  await prisma.$transaction(async (tx) => {
+  const { memberId, householdId } = await prisma.$transaction(async (tx) => {
     const household = await tx.household.create({
       data: { name: householdName },
     });
@@ -61,7 +61,8 @@ export async function completeOnboarding(input: {
       where: { id: input.userId },
       data: { memberId: member.id },
     });
+    return { memberId: member.id, householdId: household.id };
   });
 
-  return { ok: true };
+  return { ok: true, memberId, householdId };
 }

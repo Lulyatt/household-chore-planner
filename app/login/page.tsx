@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { userHasHouseholdContext } from "@/lib/auth/onboardingRoutes";
 import { LoginForm } from "./login-form";
 
 export const instant = false;
@@ -12,7 +13,9 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await auth();
   if (session?.user) {
-    redirect("/dashboard");
+    redirect(
+      userHasHouseholdContext(session.user) ? "/dashboard" : "/onboarding",
+    );
   }
 
   const params = await searchParams;

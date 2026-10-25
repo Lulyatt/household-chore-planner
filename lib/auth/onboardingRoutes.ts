@@ -8,7 +8,8 @@ export function isOnboardingRoute(pathname: string): boolean {
 }
 
 export function userHasHouseholdContext(user: {
+  memberId?: string | null;
   householdId?: string | null;
 }): boolean {
-  return Boolean(user.householdId?.trim());
+  return Boolean(user.memberId?.trim() && user.householdId?.trim());
 }
