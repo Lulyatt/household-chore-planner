@@ -63,6 +63,18 @@ Recurring occurrences stay distinguishable in history when one is missed; the ne
 
 Full product scope and principles: [`_docs/plan.md`](_docs/plan.md). Additional notes live under [`_docs/`](_docs/).
 
+## Development
+
+```bash
+npm install
+npm run dev      # http://localhost:3000
+npm test         # Vitest unit tests
+npm run build
+npm run lint
+```
+
+See [`AGENTS.md`](AGENTS.md) for commands agents should use.
+
 ## Status
 
-Early planning phase—implementation has not started yet.
+Next.js (App Router) scaffold with a passing test suite—see GitHub issue #1.
