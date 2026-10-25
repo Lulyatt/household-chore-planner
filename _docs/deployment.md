@@ -45,7 +45,11 @@ Configure these for **Production** (and Preview if you use it):
 
 See also the README section on [completion photos](../README.md#completion-photos-vercel-blob).
 
-## 4. Run migrations in production
+## 4. GitHub Actions (optional)
+
+After `DATABASE_URL` is stored as a **repository secret** (`Settings → Secrets → Actions`), run **Actions → Production migrate → Run workflow** to apply pending migrations with `prisma migrate deploy`. This satisfies the “safe prod migrate” step once the database exists.
+
+## 5. Run migrations in production (manual)
 
 Use **`migrate deploy`**, not `migrate dev`, against production. `migrate dev` is for local development and can prompt or reset data.
 
@@ -65,7 +69,7 @@ DATABASE_URL="postgresql://..." npx prisma migrate deploy
 
 **Do not** run `prisma migrate dev`, `prisma db push` (except experiments), or seed scripts against production unless you explicitly intend to load demo data.
 
-## 5. Post-deploy smoke test
+## 6. Post-deploy smoke test
 
 On the **production URL**, verify:
 
@@ -76,7 +80,7 @@ On the **production URL**, verify:
 
 If auth fails, check `AUTH_SECRET`, `AUTH_URL`, and that migrations created Auth.js tables (`User`, `Account`, etc.).
 
-## 6. Ongoing releases
+## 7. Ongoing releases
 
 1. Merge changes that include new files under `prisma/migrations/`.
 2. Run `npx prisma migrate deploy` against production (automated or manual).
