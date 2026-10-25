@@ -10,7 +10,8 @@ const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: "database",
+    // Credentials provider requires JWT sessions (database strategy is OAuth-only).
+    strategy: "jwt",
     maxAge: SESSION_MAX_AGE_SECONDS,
     updateAge: 24 * 60 * 60,
   },
@@ -62,9 +63,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
+    jwt({ token, user }) {
+      if (user?.id) {
+        token.sub = user.id;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
       }
       return session;
     },

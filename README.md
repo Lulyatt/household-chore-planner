@@ -110,7 +110,7 @@ See [`AGENTS.md`](AGENTS.md) for commands agents should use.
 
 ### Authentication (Auth.js / NextAuth v5)
 
-Email/password sign-up and sign-in use the Prisma adapter (`User`, `Session`, `Account`, `VerificationToken` tables). Sessions are stored in PostgreSQL and identified by an HTTP-only cookie (`authjs.session-token` in development).
+Email/password sign-up and sign-in store **users** in PostgreSQL via the Prisma adapter (`User`, `Account`, `VerificationToken`; `Session` remains for future OAuth). **Sessions** use Auth.js **JWT** strategy (required for the credentials provider) and are carried in an HTTP-only cookie (`authjs.session-token` in development).
 
 **Environment variables** (see `.env.example`):
 
@@ -119,7 +119,7 @@ Email/password sign-up and sign-in use the Prisma adapter (`User`, `Session`, `A
 
 **Password rules:** minimum **8 characters**; enforced on sign-up and validated on sign-in. Passwords are stored as bcrypt hashes (`passwordHash` on `User`). No complexity rules in MVP.
 
-**Session behaviour:** database sessions last **30 days** (`maxAge`). The session expiry is **extended at most once every 24 hours** while the user is active (`updateAge`), so a refresh or navigation within that window keeps the user signed in without re-entering credentials.
+**Session behaviour:** JWT sessions last **30 days** (`maxAge`). The session expiry is **extended at most once every 24 hours** while the user is active (`updateAge`), so a refresh or navigation within that window keeps the user signed in without re-entering credentials.
 
 **Deferred:** OAuth providers and email verification are not configured; only credentials sign-in is enabled.
 
