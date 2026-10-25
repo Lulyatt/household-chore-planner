@@ -9,12 +9,21 @@ async function main() {
       members: {
         create: [{ name: "Alex Kim" }, { name: "Jordan Lee" }],
       },
+      choreDefinitions: {
+        create: [
+          {
+            title: "Wash dishes",
+            description: "Evening cleanup after dinner",
+            source: "CUSTOM",
+          },
+        ],
+      },
     },
-    include: { members: true },
+    include: { members: true, choreDefinitions: true },
   });
 
   console.log(
-    `Seeded household "${household.name}" (${household.id}) with ${household.members.length} members.`,
+    `Seeded household "${household.name}" (${household.id}) with ${household.members.length} members and ${household.choreDefinitions.length} chore definition(s).`,
   );
 }
 

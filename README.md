@@ -101,12 +101,19 @@ See [`AGENTS.md`](AGENTS.md) for commands agents should use.
    npm run db:seed
    ```
 
-5. Run tests. When `DATABASE_URL` is set, integration tests exercise the database (`lib/db.test.ts`, `lib/householdMembers.test.ts`). If `DATABASE_URL` is missing, those tests are **skipped** so `npm test` still passes; set `DATABASE_URL` in `.env` to run them locally.
+5. Run tests. When `DATABASE_URL` is set, integration tests exercise the database (`lib/db.test.ts`, `lib/householdMembers.test.ts`, `lib/choreDefinitions.test.ts`). If `DATABASE_URL` is missing, those tests are **skipped** so `npm test` still passes; set `DATABASE_URL` in `.env` to run them locally.
 
 ### Household & member data rules
 
 - **Duplicate names:** The database allows the same display name twice within one household. The Members UI may enforce uniqueness later; until then, avoid duplicates in seed and manual data if you want readable lists.
-- **Deleting a household:** Removing a `Household` **cascades** and deletes its `Member` rows (`onDelete: Cascade` on the foreign key).
+- **Deleting a household:** Removing a `Household` **cascades** and deletes its `Member` and `ChoreDefinition` rows (`onDelete: Cascade` on the foreign keys).
+
+### Chore definition data rules
+
+- **Duplicate titles:** The database allows the same chore title twice within one household. List/detail UI may disambiguate later; queries should always filter by `householdId`.
+- **Description:** `null` means never provided; an empty string means the user cleared the field (prefer storing `null` when there is no description).
+- **Template provenance:** `source` is `CUSTOM` or `FROM_SUGGESTED_TEMPLATE`; `suggestedTemplateKey` is set only for template-backed rows and stays `null` for custom chores.
+- **Recurrence / rotation:** `recurrenceRule` and `rotationConfig` are nullable placeholders until tasks #17 and #19 add behavior.
 
 ## Status
 

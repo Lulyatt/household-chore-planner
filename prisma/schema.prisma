@@ -1,7 +1,10 @@
 // Household and Member models for shared-account scoping.
 // Duplicate display names within one household are allowed at the DB layer;
 // the Members UI (#9) may enforce uniqueness in application code.
-// Deleting a household cascades to its members (onDelete: Cascade).
+// Deleting a household cascades to its members and chore definitions (onDelete: Cascade).
+//
+// ChoreDefinition rows are household-scoped blueprints; occurrences/completions are modeled in #5.
+// Duplicate chore titles within one household are allowed at the DB layer; UI may disambiguate later.
 
 generator client {
   provider = "prisma-client-js"
@@ -12,12 +15,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ChoreDefinitionSource {
+  CUSTOM
+  FROM_SUGGESTED_TEMPLATE
+}
+
 model Household {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  members   Member[]
+  id                String             @id @default(cuid())
+  name              String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  members           Member[]
+  choreDefinitions  ChoreDefinition[]
 
   @@map("households")
 }
@@ -32,4 +41,25 @@ model Member {
 
   @@index([householdId])
   @@map("members")
+}
+
+model ChoreDefinition {
+  id          String                @id @default(cuid())
+  householdId String
+  title       String
+  /// Optional long text. `null` = never provided; `""` = user cleared the field (prefer `null` for "no description" in queries).
+  description String?
+  source      ChoreDefinitionSource @default(CUSTOM)
+  /// Built-in template key when source is FROM_SUGGESTED_TEMPLATE; must be null when source is CUSTOM.
+  suggestedTemplateKey String?
+  /// Recurrence rule placeholder (#17); null until recurrence is configured—no generation logic yet.
+  recurrenceRule Json?
+  /// Rotation order/config placeholder (#19); null until rotation is configured—no assignment logic yet.
+  rotationConfig Json?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  household   Household             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId])
+  @@map("chore_definitions")
 }
