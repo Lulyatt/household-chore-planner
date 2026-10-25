@@ -64,13 +64,19 @@ describe.skipIf(!hasDatabaseUrl)("createCustomChore", () => {
 
   it("creates one PENDING occurrence when a due date is provided", async () => {
     const household = await prisma.household.create({
-      data: { name: "One-off Chore Home" },
+      data: {
+        name: "One-off Chore Home",
+        members: { create: { name: "Sam" } },
+      },
+      include: { members: true },
     });
+    const member = household.members[0]!;
 
     const result = await createCustomChore({
       householdId: household.id,
       title: "Deep clean oven",
       dueDate: "2026-11-01",
+      assigneeId: member.id,
     });
     expect(result.ok).toBe(true);
     if (!result.ok) {
@@ -86,6 +92,31 @@ describe.skipIf(!hasDatabaseUrl)("createCustomChore", () => {
     expect(occurrences[0]?.dueDate).toEqual(
       new Date("2026-11-01T00:00:00.000Z"),
     );
+    expect(occurrences[0]?.assigneeId).toBe(member.id);
+
+    await prisma.household.delete({ where: { id: household.id } });
+  });
+
+  it("creates an unassigned occurrence when no assignee is provided", async () => {
+    const household = await prisma.household.create({
+      data: { name: "Unassigned Occurrence Home" },
+    });
+
+    const result = await createCustomChore({
+      householdId: household.id,
+      title: "Water plants",
+      dueDate: "2026-12-01",
+      assigneeId: null,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    const occurrences = await prisma.choreOccurrence.findMany({
+      where: { choreDefinitionId: result.choreDefinitionId },
+    });
+    expect(occurrences[0]?.assigneeId).toBeNull();
 
     await prisma.household.delete({ where: { id: household.id } });
   });

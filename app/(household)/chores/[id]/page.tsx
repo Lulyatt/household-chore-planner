@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getChoreDefinitionForCurrentHousehold } from "@/lib/chores/queries";
+import { listMembersForCurrentHousehold } from "@/lib/household/queries";
+import { OccurrenceAssigneeControls } from "./occurrence-assignee-controls";
 
 export const instant = false;
 
@@ -29,7 +31,10 @@ export default async function ChoreDetailPage({
 }: ChoreDetailPageProps) {
   const { id } = await params;
   const query = await searchParams;
-  const chore = await getChoreDefinitionForCurrentHousehold(id);
+  const [chore, members] = await Promise.all([
+    getChoreDefinitionForCurrentHousehold(id),
+    listMembersForCurrentHousehold(),
+  ]);
 
   if (!chore) {
     notFound();
@@ -91,7 +96,14 @@ export default async function ChoreDetailPage({
                       {formatOccurrenceStatus(occurrence.status)}
                     </td>
                     <td className="px-4 py-3 text-zinc-600">
-                      {occurrence.assignee?.name ?? "Unassigned"}
+                      <OccurrenceAssigneeControls
+                        occurrenceId={occurrence.id}
+                        choreDefinitionId={chore.id}
+                        status={occurrence.status}
+                        assigneeId={occurrence.assignee?.id ?? null}
+                        assigneeName={occurrence.assignee?.name ?? null}
+                        members={members}
+                      />
                     </td>
                   </tr>
                 ))}

@@ -4,6 +4,11 @@ const nextDueOccurrenceInclude = {
   orderBy: { dueDate: "asc" as const },
   where: { status: "PENDING" as const },
   take: 1,
+  include: {
+    assignee: {
+      select: { id: true, name: true },
+    },
+  },
 };
 
 const occurrenceDetailInclude = {

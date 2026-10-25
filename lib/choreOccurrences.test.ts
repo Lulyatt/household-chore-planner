@@ -1,8 +1,20 @@
 import { afterAll, describe, expect, it } from "vitest";
-import { assertAssigneeInHousehold } from "./choreOccurrences";
+import {
+  assertAssigneeInHousehold,
+  parseOptionalAssigneeId,
+} from "./choreOccurrences";
 import { prisma } from "./db";
 
 const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
+
+describe("parseOptionalAssigneeId", () => {
+  it("treats empty form values as unassigned", () => {
+    expect(parseOptionalAssigneeId(null)).toBeNull();
+    expect(parseOptionalAssigneeId("")).toBeNull();
+    expect(parseOptionalAssigneeId("   ")).toBeNull();
+    expect(parseOptionalAssigneeId("member-123")).toBe("member-123");
+  });
+});
 
 describe.skipIf(!hasDatabaseUrl)("chore occurrences and completions", () => {
   afterAll(async () => {

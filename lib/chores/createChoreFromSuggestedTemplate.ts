@@ -1,3 +1,4 @@
+import { assertAssigneeInHousehold } from "@/lib/choreOccurrences";
 import { prisma } from "@/lib/db";
 import { getSuggestedChoreTemplateByKey } from "@/lib/suggestedChoreTemplates/getCatalog";
 import {
@@ -28,6 +29,7 @@ export async function createChoreFromSuggestedTemplate(input: {
   title: string;
   description?: string | null;
   dueDate?: string | null;
+  assigneeId?: string | null;
 }): Promise<CreateCustomChoreResult> {
   const template = await getSuggestedChoreTemplateByKey(
     input.suggestedTemplateKey,
@@ -57,6 +59,18 @@ export async function createChoreFromSuggestedTemplate(input: {
     return { ok: false, message: "Due date must be a valid calendar date." };
   }
 
+  const assigneeId = input.assigneeId ?? null;
+  if (assigneeId != null) {
+    try {
+      await assertAssigneeInHousehold(prisma, input.householdId, assigneeId);
+    } catch {
+      return {
+        ok: false,
+        message: "Assignee must be a member of your household.",
+      };
+    }
+  }
+
   const definition = await prisma.$transaction(async (tx) => {
     const created = await tx.choreDefinition.create({
       data: {
@@ -75,6 +89,7 @@ export async function createChoreFromSuggestedTemplate(input: {
           householdId: input.householdId,
           dueDate: parsedDueDate,
           status: "PENDING",
+          assigneeId,
         },
       });
     }

@@ -46,7 +46,10 @@ export default async function ChoresPage() {
       ) : (
         <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-white">
           {chores.map((chore) => {
-            const nextDue = chore.occurrences[0]?.dueDate;
+            const nextOccurrence = chore.occurrences[0];
+            const nextDue = nextOccurrence?.dueDate;
+            const nextAssigneeLabel =
+              nextOccurrence?.assignee?.name ?? "Unassigned";
             return (
               <li key={chore.id}>
                 <Link
@@ -63,7 +66,7 @@ export default async function ChoresPage() {
                   ) : null}
                   <span className="text-xs text-zinc-500">
                     {nextDue
-                      ? `Next due ${formatDueDate(nextDue)}`
+                      ? `Next due ${formatDueDate(nextDue)} · ${nextAssigneeLabel}`
                       : "No due date scheduled"}
                   </span>
                 </Link>

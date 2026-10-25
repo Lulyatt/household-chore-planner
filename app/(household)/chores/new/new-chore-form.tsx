@@ -10,16 +10,23 @@ import {
 
 const initialState: CreateCustomChoreFormState = {};
 
+type HouseholdMemberOption = {
+  id: string;
+  name: string;
+};
+
 type NewChoreFormProps = {
   defaultTitle?: string;
   defaultDescription?: string;
   suggestedTemplateKey?: string;
+  members?: HouseholdMemberOption[];
 };
 
 export function NewChoreForm({
   defaultTitle = "",
   defaultDescription = "",
   suggestedTemplateKey,
+  members = [],
 }: NewChoreFormProps = {}) {
   const [state, formAction, pending] = useActionState(
     suggestedTemplateKey
@@ -79,6 +86,27 @@ export function NewChoreForm({
           saved.
         </span>
       </label>
+      {members.length > 0 ? (
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-zinc-600">Assignee (optional)</span>
+          <select
+            name="assigneeId"
+            defaultValue=""
+            className="rounded-lg border border-zinc-300 px-3 py-2"
+          >
+            <option value="">Unassigned</option>
+            {members.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs text-zinc-500">
+            Applies when you set a first due date. Leave empty to create an
+            unassigned occurrence.
+          </span>
+        </label>
+      ) : null}
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"

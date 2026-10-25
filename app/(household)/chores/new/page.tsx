@@ -1,8 +1,11 @@
+import { listMembersForCurrentHousehold } from "@/lib/household/queries";
 import { NewChoreForm } from "./new-chore-form";
 
 export const instant = false;
 
-export default function NewChorePage() {
+export default async function NewChorePage() {
+  const members = await listMembersForCurrentHousehold();
+
   return (
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
@@ -12,7 +15,7 @@ export default function NewChorePage() {
           date now or add occurrences later.
         </p>
       </header>
-      <NewChoreForm />
+      <NewChoreForm members={members} />
     </section>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { listMembersForCurrentHousehold } from "@/lib/household/queries";
 import { getSuggestedChoreTemplateByKey } from "@/lib/suggestedChoreTemplates/getCatalog";
 import { NewChoreForm } from "../../../new/new-chore-form";
 
@@ -13,9 +14,10 @@ export default async function NewChoreFromTemplatePage({
   params,
 }: NewChoreFromTemplatePageProps) {
   const { templateKey } = await params;
-  const template = await getSuggestedChoreTemplateByKey(
-    decodeURIComponent(templateKey),
-  );
+  const [template, members] = await Promise.all([
+    getSuggestedChoreTemplateByKey(decodeURIComponent(templateKey)),
+    listMembersForCurrentHousehold(),
+  ]);
 
   if (!template) {
     notFound();
@@ -42,6 +44,7 @@ export default async function NewChoreFromTemplatePage({
         suggestedTemplateKey={template.key}
         defaultTitle={template.title}
         defaultDescription={template.description}
+        members={members}
       />
     </section>
   );

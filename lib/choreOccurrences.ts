@@ -2,6 +2,20 @@ import type { PrismaClient } from "@prisma/client";
 
 type AssigneeClient = Pick<PrismaClient, "member">;
 
+/** Parses form values: empty or sentinel means no assignee. */
+export function parseOptionalAssigneeId(
+  raw: FormDataEntryValue | null | undefined,
+): string | null {
+  if (raw == null) {
+    return null;
+  }
+  const trimmed = String(raw).trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+  return trimmed;
+}
+
 /** Ensures assigneeId, when set, belongs to the occurrence's household. */
 export async function assertAssigneeInHousehold(
   db: AssigneeClient,
