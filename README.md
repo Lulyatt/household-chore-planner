@@ -108,6 +108,23 @@ See [`AGENTS.md`](AGENTS.md) for commands agents should use.
 - **Duplicate names:** The database allows the same display name twice within one household. The Members UI may enforce uniqueness later; until then, avoid duplicates in seed and manual data if you want readable lists.
 - **Deleting a household:** Removing a `Household` **cascades** and deletes its `Member` and `ChoreDefinition` rows (`onDelete: Cascade` on the foreign keys).
 
+### Authentication (Auth.js / NextAuth v5)
+
+Email/password sign-up and sign-in use the Prisma adapter (`User`, `Session`, `Account`, `VerificationToken` tables). Sessions are stored in PostgreSQL and identified by an HTTP-only cookie (`authjs.session-token` in development).
+
+**Environment variables** (see `.env.example`):
+
+- `AUTH_SECRET` — required; use `openssl rand -base64 32` to generate.
+- `AUTH_URL` — optional locally; set to your public URL in production.
+
+**Password rules:** minimum **8 characters**; enforced on sign-up and validated on sign-in. Passwords are stored as bcrypt hashes (`passwordHash` on `User`). No complexity rules in MVP.
+
+**Session behaviour:** database sessions last **30 days** (`maxAge`). The session expiry is **extended at most once every 24 hours** while the user is active (`updateAge`), so a refresh or navigation within that window keeps the user signed in without re-entering credentials.
+
+**Deferred:** OAuth providers and email verification are not configured; only credentials sign-in is enabled.
+
+**Protected routes:** `/dashboard`, `/chores`, and `/members` require auth (middleware redirects to `/login`). Household membership is not linked to `User` yet ([#7](https://github.com/Lulyatt/household-chore-planner/issues/7)).
+
 ### Chore definition data rules
 
 - **Duplicate titles:** The database allows the same chore title twice within one household. List/detail UI may disambiguate later; queries should always filter by `householdId`.
