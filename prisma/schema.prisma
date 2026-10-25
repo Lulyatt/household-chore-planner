@@ -1,9 +1,16 @@
 // Household and Member models for shared-account scoping.
 // Duplicate display names within one household are allowed at the DB layer;
 // the Members UI (#9) may enforce uniqueness in application code.
-// Deleting a household cascades to its members and chore definitions (onDelete: Cascade).
+// Deleting a household cascades to its members, chore definitions, occurrences, and completions (onDelete: Cascade).
 //
-// ChoreDefinition rows are household-scoped blueprints; occurrences/completions are modeled in #5.
+// ChoreDefinition rows are household-scoped blueprints. Each due instance is a ChoreOccurrence row
+// (dueDate, status, optional assigneeId). Completing an instance creates a Completion row and sets
+// status to COMPLETED; sibling occurrences for the same definition are unchanged.
+// Missed instances stay PENDING and are not overwritten when new occurrences are generated (#18).
+// Overdue is not stored as status: pending rows with dueDate before start of "today" (household
+// timezone, documented in #20) are treated as overdue in queries.
+// assigneeId must reference a Member in the same household as the occurrence (enforced in app code).
+//
 // Duplicate chore titles within one household are allowed at the DB layer; UI may disambiguate later.
 
 generator client {
@@ -20,6 +27,11 @@ enum ChoreDefinitionSource {
   FROM_SUGGESTED_TEMPLATE
 }
 
+enum ChoreOccurrenceStatus {
+  PENDING
+  COMPLETED
+}
+
 model Household {
   id                String             @id @default(cuid())
   name              String
@@ -27,39 +39,79 @@ model Household {
   updatedAt         DateTime           @updatedAt
   members           Member[]
   choreDefinitions  ChoreDefinition[]
+  choreOccurrences  ChoreOccurrence[]
 
   @@map("households")
 }
 
 model Member {
-  id          String    @id @default(cuid())
-  name        String
-  householdId String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  id                   String            @id @default(cuid())
+  name                 String
+  householdId          String
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  household            Household         @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  assignedOccurrences  ChoreOccurrence[] @relation("OccurrenceAssignee")
+  completionsRecorded  Completion[]      @relation("CompletionRecordedBy")
 
   @@index([householdId])
   @@map("members")
 }
 
 model ChoreDefinition {
-  id          String                @id @default(cuid())
-  householdId String
-  title       String
+  id                   String                @id @default(cuid())
+  householdId          String
+  title                String
   /// Optional long text. `null` = never provided; `""` = user cleared the field (prefer `null` for "no description" in queries).
-  description String?
-  source      ChoreDefinitionSource @default(CUSTOM)
+  description          String?
+  source               ChoreDefinitionSource @default(CUSTOM)
   /// Built-in template key when source is FROM_SUGGESTED_TEMPLATE; must be null when source is CUSTOM.
   suggestedTemplateKey String?
   /// Recurrence rule placeholder (#17); null until recurrence is configured—no generation logic yet.
-  recurrenceRule Json?
+  recurrenceRule       Json?
   /// Rotation order/config placeholder (#19); null until rotation is configured—no assignment logic yet.
-  rotationConfig Json?
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
-  household   Household             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  rotationConfig       Json?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  household            Household             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  occurrences          ChoreOccurrence[]
 
   @@index([householdId])
   @@map("chore_definitions")
+}
+
+model ChoreOccurrence {
+  id                String                @id @default(cuid())
+  choreDefinitionId String
+  householdId       String
+  dueDate           DateTime              @db.Date
+  status            ChoreOccurrenceStatus @default(PENDING)
+  assigneeId        String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  choreDefinition   ChoreDefinition       @relation(fields: [choreDefinitionId], references: [id], onDelete: Cascade)
+  household         Household             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  assignee          Member?               @relation("OccurrenceAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  completion        Completion?
+
+  @@index([householdId])
+  @@index([choreDefinitionId])
+  @@index([assigneeId])
+  @@map("chore_occurrences")
+}
+
+model Completion {
+  id                  String          @id @default(cuid())
+  choreOccurrenceId   String          @unique
+  completedAt         DateTime        @default(now())
+  note                String
+  photoUrl            String?
+  completedByMemberId String
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  choreOccurrence     ChoreOccurrence @relation(fields: [choreOccurrenceId], references: [id], onDelete: Cascade)
+  completedBy         Member          @relation("CompletionRecordedBy", fields: [completedByMemberId], references: [id], onDelete: Cascade)
+
+  @@index([completedByMemberId])
+  @@map("completions")
 }
