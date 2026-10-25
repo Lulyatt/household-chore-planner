@@ -81,7 +81,7 @@ describe.skipIf(!hasDatabaseUrl)("chore definition queries", () => {
     await prisma.household.delete({ where: { id: householdB.id } });
   });
 
-  it("loads chore detail with occurrences, status, and assignee", async () => {
+  it("loads chore detail without embedding occurrences", async () => {
     const household = await prisma.household.create({
       data: {
         name: "Chore Detail Household",
@@ -124,9 +124,7 @@ describe.skipIf(!hasDatabaseUrl)("chore definition queries", () => {
 
     expect(loaded?.title).toBe("Wash windows");
     expect(loaded?.description).toBe("Inside and out");
-    expect(loaded?.occurrences).toHaveLength(2);
-    expect(loaded?.occurrences[0]?.assignee?.name).toBe("Jordan");
-    expect(loaded?.occurrences[1]?.assignee).toBeNull();
+    expect(loaded).not.toHaveProperty("occurrences");
 
     await prisma.household.delete({ where: { id: household.id } });
   });

@@ -7,6 +7,7 @@ import {
   createCustomChoreAction,
   type CreateCustomChoreFormState,
 } from "../actions";
+import { RecurrenceFields } from "./recurrence-fields";
 
 const initialState: CreateCustomChoreFormState = {};
 
@@ -81,11 +82,12 @@ export function NewChoreForm({
           className="rounded-lg border border-zinc-300 px-3 py-2"
         />
         <span className="text-xs text-zinc-500">
-          When set, one pending occurrence is created for this date. Recurring
-          schedules come later; without a date, only the chore definition is
+          When set, one pending occurrence is created for this date. Required
+          when recurrence is enabled; otherwise only the chore definition is
           saved.
         </span>
       </label>
+      <RecurrenceFields />
       {members.length > 0 ? (
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-zinc-600">Assignee (optional)</span>

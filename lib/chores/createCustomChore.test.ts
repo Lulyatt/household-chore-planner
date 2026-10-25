@@ -121,6 +121,35 @@ describe.skipIf(!hasDatabaseUrl)("createCustomChore", () => {
     await prisma.household.delete({ where: { id: household.id } });
   });
 
+  it("persists a weekly recurrence rule with the first occurrence", async () => {
+    const household = await prisma.household.create({
+      data: { name: "Recurring Chore Home" },
+    });
+
+    const result = await createCustomChore({
+      householdId: household.id,
+      title: "Recycle bins",
+      dueDate: "2026-10-05",
+      recurrenceRule: { kind: "weekly", weekday: 1 },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    const definition = await prisma.choreDefinition.findUnique({
+      where: { id: result.choreDefinitionId },
+    });
+    expect(definition?.recurrenceRule).toEqual({ kind: "weekly", weekday: 1 });
+
+    const occurrences = await prisma.choreOccurrence.findMany({
+      where: { choreDefinitionId: result.choreDefinitionId },
+    });
+    expect(occurrences).toHaveLength(1);
+
+    await prisma.household.delete({ where: { id: household.id } });
+  });
+
   it("rejects whitespace-only titles", async () => {
     const household = await prisma.household.create({
       data: { name: "Validation Chore Home" },

@@ -1,5 +1,6 @@
 import { assertAssigneeInHousehold } from "@/lib/choreOccurrences";
 import { prisma } from "@/lib/db";
+import type { RecurrenceRule } from "./recurrenceRule";
 
 export type CreateCustomChoreResult =
   | { ok: true; choreDefinitionId: string }
@@ -47,9 +48,10 @@ export function parseOptionalDueDateInput(
 /**
  * Creates a household-scoped custom chore definition.
  *
- * One-off behavior (until recurrence #17): when the user supplies a first due
- * date, a single PENDING occurrence is created and no further instances are
- * generated automatically. With no due date, only the definition is stored.
+ * When the user supplies a first due date, a single PENDING occurrence is
+ * created. Recurring definitions also store {@link RecurrenceRule} on the
+ * definition; further instances are generated on chore list/detail load (#18).
+ * With no due date, only the definition is stored (non-recurring only).
  */
 export async function createCustomChore(input: {
   householdId: string;
@@ -57,6 +59,7 @@ export async function createCustomChore(input: {
   description?: string | null;
   dueDate?: string | null;
   assigneeId?: string | null;
+  recurrenceRule?: RecurrenceRule | null;
 }): Promise<CreateCustomChoreResult> {
   const title = normalizeChoreTitle(input.title);
   if (title.length < 1) {
@@ -79,6 +82,14 @@ export async function createCustomChore(input: {
     return { ok: false, message: "Due date must be a valid calendar date." };
   }
 
+  const recurrenceRule = input.recurrenceRule ?? null;
+  if (recurrenceRule != null && parsedDueDate == null) {
+    return {
+      ok: false,
+      message: "First due date is required for recurring chores.",
+    };
+  }
+
   const assigneeId = input.assigneeId ?? null;
   if (assigneeId != null) {
     try {
@@ -99,6 +110,7 @@ export async function createCustomChore(input: {
         description,
         source: "CUSTOM",
         suggestedTemplateKey: null,
+        recurrenceRule: recurrenceRule ?? undefined,
       },
     });
 

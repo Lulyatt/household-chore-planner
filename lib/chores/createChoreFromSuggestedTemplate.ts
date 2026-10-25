@@ -1,6 +1,7 @@
 import { assertAssigneeInHousehold } from "@/lib/choreOccurrences";
 import { prisma } from "@/lib/db";
 import { getSuggestedChoreTemplateByKey } from "@/lib/suggestedChoreTemplates/getCatalog";
+import type { RecurrenceRule } from "./recurrenceRule";
 import {
   normalizeChoreTitle,
   parseOptionalDueDateInput,
@@ -30,6 +31,7 @@ export async function createChoreFromSuggestedTemplate(input: {
   description?: string | null;
   dueDate?: string | null;
   assigneeId?: string | null;
+  recurrenceRule?: RecurrenceRule | null;
 }): Promise<CreateCustomChoreResult> {
   const template = await getSuggestedChoreTemplateByKey(
     input.suggestedTemplateKey,
@@ -59,6 +61,14 @@ export async function createChoreFromSuggestedTemplate(input: {
     return { ok: false, message: "Due date must be a valid calendar date." };
   }
 
+  const recurrenceRule = input.recurrenceRule ?? null;
+  if (recurrenceRule != null && parsedDueDate == null) {
+    return {
+      ok: false,
+      message: "First due date is required for recurring chores.",
+    };
+  }
+
   const assigneeId = input.assigneeId ?? null;
   if (assigneeId != null) {
     try {
@@ -79,6 +89,7 @@ export async function createChoreFromSuggestedTemplate(input: {
         description,
         source: "FROM_SUGGESTED_TEMPLATE",
         suggestedTemplateKey: template.key,
+        recurrenceRule: recurrenceRule ?? undefined,
       },
     });
 

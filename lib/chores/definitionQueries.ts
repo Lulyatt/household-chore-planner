@@ -11,15 +11,6 @@ const nextDueOccurrenceInclude = {
   },
 };
 
-const occurrenceDetailInclude = {
-  orderBy: { dueDate: "asc" as const },
-  include: {
-    assignee: {
-      select: { id: true, name: true },
-    },
-  },
-};
-
 /** Lists chore definitions for a household (server-side scope only). */
 export function listChoreDefinitionsForHousehold(householdId: string) {
   return prisma.choreDefinition.findMany({
@@ -35,8 +26,5 @@ export function listChoreDefinitionsForHousehold(householdId: string) {
 export function getChoreDefinitionForHousehold(id: string, householdId: string) {
   return prisma.choreDefinition.findFirst({
     where: { id, householdId },
-    include: {
-      occurrences: occurrenceDetailInclude,
-    },
   });
 }

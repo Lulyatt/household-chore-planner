@@ -125,9 +125,9 @@ model ChoreDefinition {
   source               ChoreDefinitionSource @default(CUSTOM)
   /// Built-in template key when source is FROM_SUGGESTED_TEMPLATE; must be null when source is CUSTOM.
   suggestedTemplateKey String?
-  /// Recurrence rule placeholder (#17); null until recurrence is configured—no generation logic yet.
+  /// Recurrence rule JSON (#17); null = one-off. See `_docs/recurrence-patterns.md`.
   recurrenceRule       Json?
-  /// Rotation order/config placeholder (#19); null until rotation is configured—no assignment logic yet.
+  /// Rotation order JSON (#19): `{ enabled, memberIds }`; see `_docs/overdue-and-rotation.md`.
   rotationConfig       Json?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt

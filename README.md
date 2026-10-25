@@ -63,6 +63,8 @@ Recurring occurrences stay distinguishable in history when one is missed; the ne
 
 Full product scope and principles: [`_docs/plan.md`](_docs/plan.md). Additional notes live under [`_docs/`](_docs/).
 
+**Production:** deployment steps, migrations, and environment variables — [`_docs/deployment.md`](_docs/deployment.md).
+
 ## Development
 
 ```bash
@@ -125,12 +127,22 @@ Email/password sign-up and sign-in store **users** in PostgreSQL via the Prisma 
 
 **Protected routes:** `/dashboard`, `/chores`, and `/members` require auth (middleware redirects to `/login`). Household membership is not linked to `User` yet ([#7](https://github.com/Lulyatt/household-chore-planner/issues/7)).
 
+### Completion photos (Vercel Blob)
+
+Completing a chore requires **a note and/or a photo** (MVP). Photos upload **server-side** from the completion form via [`@vercel/blob`](https://vercel.com/docs/storage/vercel-blob).
+
+**Environment variable** (see `.env.example`):
+
+- `BLOB_READ_WRITE_TOKEN` — read-write token from a Vercel Blob store ([create in the Vercel dashboard](https://vercel.com/docs/storage/vercel-blob#creating-a-blob-store) under **Storage → Blob**, or use the Vercel CLI). If unset, users can still complete chores with a note only.
+
+**Validation:** JPEG, PNG, WebP, or GIF; maximum **5 MB** per file.
+
 ### Chore definition data rules
 
 - **Duplicate titles:** The database allows the same chore title twice within one household. List/detail UI may disambiguate later; queries should always filter by `householdId`.
 - **Description:** `null` means never provided; an empty string means the user cleared the field (prefer storing `null` when there is no description).
 - **Template provenance:** `source` is `CUSTOM` or `FROM_SUGGESTED_TEMPLATE`; `suggestedTemplateKey` is set only for template-backed rows and stays `null` for custom chores.
-- **Recurrence / rotation:** `recurrenceRule` and `rotationConfig` are nullable placeholders until tasks #17 and #19 add behavior.
+- **Recurrence:** Optional JSON on the definition; see [`_docs/recurrence-patterns.md`](_docs/recurrence-patterns.md). **Rotation / overdue:** See [`_docs/overdue-and-rotation.md`](_docs/overdue-and-rotation.md).
 
 ## Status
 

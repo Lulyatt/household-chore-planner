@@ -7,7 +7,7 @@ import {
   type OccurrenceActionState,
 } from "../actions";
 
-type HouseholdMemberOption = {
+export type HouseholdMemberOption = {
   id: string;
   name: string;
 };

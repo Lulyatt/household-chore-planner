@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { connection } from "next/server";
+import { getOccurrenceDisplayStatus } from "@/lib/chores/occurrenceStatus";
 import { listChoreDefinitionsForCurrentHousehold } from "@/lib/chores/queries";
+import { OccurrenceStatusBadge } from "./occurrence-status-badge";
 
 export const instant = false;
 
@@ -8,6 +11,8 @@ function formatDueDate(date: Date): string {
 }
 
 export default async function ChoresPage() {
+  await connection();
+  const asOfDate = new Date();
   const chores = await listChoreDefinitionsForCurrentHousehold();
 
   return (
@@ -50,14 +55,28 @@ export default async function ChoresPage() {
             const nextDue = nextOccurrence?.dueDate;
             const nextAssigneeLabel =
               nextOccurrence?.assignee?.name ?? "Unassigned";
+            const nextDisplayStatus = nextOccurrence
+              ? getOccurrenceDisplayStatus(
+                  nextOccurrence.status,
+                  nextOccurrence.dueDate,
+                  asOfDate,
+                )
+              : null;
             return (
               <li key={chore.id}>
                 <Link
                   href={`/chores/${chore.id}`}
                   className="flex flex-col gap-1 px-4 py-3 hover:bg-zinc-50"
                 >
-                  <span className="text-sm font-medium text-zinc-900">
-                    {chore.title}
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-zinc-900">
+                      {chore.title}
+                    </span>
+                    {nextDisplayStatus ? (
+                      <OccurrenceStatusBadge
+                        displayStatus={nextDisplayStatus}
+                      />
+                    ) : null}
                   </span>
                   {chore.description ? (
                     <span className="line-clamp-2 text-sm text-zinc-600">
