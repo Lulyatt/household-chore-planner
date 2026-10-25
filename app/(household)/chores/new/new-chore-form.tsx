@@ -3,20 +3,40 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import {
+  createChoreFromSuggestedTemplateAction,
   createCustomChoreAction,
   type CreateCustomChoreFormState,
 } from "../actions";
 
 const initialState: CreateCustomChoreFormState = {};
 
-export function NewChoreForm() {
+type NewChoreFormProps = {
+  defaultTitle?: string;
+  defaultDescription?: string;
+  suggestedTemplateKey?: string;
+};
+
+export function NewChoreForm({
+  defaultTitle = "",
+  defaultDescription = "",
+  suggestedTemplateKey,
+}: NewChoreFormProps = {}) {
   const [state, formAction, pending] = useActionState(
-    createCustomChoreAction,
+    suggestedTemplateKey
+      ? createChoreFromSuggestedTemplateAction
+      : createCustomChoreAction,
     initialState,
   );
 
   return (
     <form action={formAction} className="flex w-full max-w-md flex-col gap-4">
+      {suggestedTemplateKey ? (
+        <input
+          type="hidden"
+          name="suggestedTemplateKey"
+          value={suggestedTemplateKey}
+        />
+      ) : null}
       {state.error ? (
         <p
           className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
@@ -31,6 +51,7 @@ export function NewChoreForm() {
           name="title"
           type="text"
           required
+          defaultValue={defaultTitle}
           placeholder="e.g. Clean the fridge"
           className="rounded-lg border border-zinc-300 px-3 py-2"
         />
@@ -40,6 +61,7 @@ export function NewChoreForm() {
         <textarea
           name="description"
           rows={3}
+          defaultValue={defaultDescription}
           placeholder="Any notes for your household"
           className="rounded-lg border border-zinc-300 px-3 py-2"
         />

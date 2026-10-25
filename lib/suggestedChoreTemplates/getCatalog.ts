@@ -9,3 +9,17 @@ export async function getSuggestedChoreTemplateCatalog(): Promise<
 > {
   return SUGGESTED_CHORE_TEMPLATES.map((template) => ({ ...template }));
 }
+
+/** Resolves a catalog entry by stable template key, or null if unknown. */
+export async function getSuggestedChoreTemplateByKey(
+  key: string,
+): Promise<SuggestedChoreTemplate | null> {
+  const trimmed = key.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+  const match = SUGGESTED_CHORE_TEMPLATES.find(
+    (template) => template.key === trimmed,
+  );
+  return match ? { ...match } : null;
+}

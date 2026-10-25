@@ -19,12 +19,20 @@ export default async function ChoresPage() {
             Custom and template-based chore definitions for your household.
           </p>
         </div>
-        <Link
-          href="/chores/new"
-          className="inline-flex self-start rounded-full bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700"
-        >
-          New chore
-        </Link>
+        <div className="flex flex-wrap gap-2 self-start">
+          <Link
+            href="/chores/templates"
+            className="inline-flex rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+          >
+            From template
+          </Link>
+          <Link
+            href="/chores/new"
+            className="inline-flex rounded-full bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700"
+          >
+            New chore
+          </Link>
+        </div>
       </header>
 
       {chores.length === 0 ? (

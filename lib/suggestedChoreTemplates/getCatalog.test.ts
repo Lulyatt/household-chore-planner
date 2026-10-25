@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { SUGGESTED_CHORE_TEMPLATES } from "./catalog";
-import { getSuggestedChoreTemplateCatalog } from "./getCatalog";
+import {
+  getSuggestedChoreTemplateByKey,
+  getSuggestedChoreTemplateCatalog,
+} from "./getCatalog";
 
 describe("getSuggestedChoreTemplateCatalog", () => {
   it("returns at least five templates with stable keys, titles, and descriptions", async () => {
@@ -28,5 +31,15 @@ describe("getSuggestedChoreTemplateCatalog", () => {
   it("includes the trash template key used by chore definition provenance", async () => {
     const catalog = await getSuggestedChoreTemplateCatalog();
     expect(catalog.some((t) => t.key === "trash")).toBe(true);
+  });
+});
+
+describe("getSuggestedChoreTemplateByKey", () => {
+  it("returns a matching template or null", async () => {
+    const trash = await getSuggestedChoreTemplateByKey("trash");
+    expect(trash?.title).toBe("Take out trash");
+
+    expect(await getSuggestedChoreTemplateByKey("missing-key")).toBeNull();
+    expect(await getSuggestedChoreTemplateByKey("  ")).toBeNull();
   });
 });
